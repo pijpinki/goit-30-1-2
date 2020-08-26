@@ -1,7 +1,6 @@
 const express = require("express");
 const morgan = require("morgan");
 const path = require("path");
-const usersRouter = require("./routers/users");
 const config = require("../config");
 
 const app = express();
@@ -11,8 +10,6 @@ app.use(morgan("tiny"));
 app.use(express.urlencoded());
 
 app.use("/app", express.static(path.join(__dirname, "public")));
-
-app.use("/users", usersRouter);
 
 app.get("/users", (req, res) => {
   res.send({
@@ -27,7 +24,13 @@ app.post("/users", (req, res) => {
     return res.status(400).send({ message: "Bad params, missed name" });
   }
 
-  users.set(`${name}-${surname}`, { name, surname });
+  const key = `${name}-${surname}`;
+
+  if (users.has(key)) {
+    return res.status(400).send({ message: "Bad params, users already exist" });
+  }
+
+  users.set(key, { name, surname });
 
   res.send("<h1>User was created</h1>");
 });
